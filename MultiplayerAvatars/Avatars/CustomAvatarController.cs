@@ -1,4 +1,5 @@
 using CustomAvatar.Avatar;
+using IPA.Utilities;
 using MultiplayerAvatars.Networking;
 using MultiplayerAvatars.Providers;
 using SiraUtil.Logging;
@@ -26,6 +27,12 @@ namespace MultiplayerAvatars.Avatars
         private MultiplayerAvatarInput _avatarInput = null!;
         private SiraLog _logger = null!;
 
+        public MultiplayerBigAvatarAnimator? BigAvatarAnimator { get; set; }
+        private SpawnedAvatar? _spawnedBigAvatar = null;
+        private MultiplayerAvatarInput? _bigAvatarInput = null;
+
+        public bool IsDuel { get; set; } = false;
+
         [Inject]
         public void Construct(
             AvatarSpawner avatarSpawner,
@@ -43,6 +50,9 @@ namespace MultiplayerAvatars.Avatars
             _logger = logger;
 
             _avatarInput = new MultiplayerAvatarInput(poseController);
+            _bigAvatarInput = new MultiplayerAvatarInput(poseController);
+
+            // Utils.ReadEntireScene(_logger, _poseController.transform);
         }
 
         public void OnEnable()
@@ -92,6 +102,40 @@ namespace MultiplayerAvatars.Avatars
             if (avatarIk != null)
                 avatarIk.isLocomotionEnabled = true;
             _spawnedAvatar.scale = _avatarPacket.Scale;
+
+            if (IsDuel)
+            {
+                _logger.Debug("Skipping Big Avatar, as this is a Duel.");
+                return;
+            }
+
+            if (_bigAvatarInput == null)
+            {
+                _logger.Error("No Big Avatar Input?");
+                return;
+            }
+
+            if (BigAvatarAnimator == null)
+            {
+                if (_connectedPlayer.isMe == false)
+                    _logger.Error("Did not have a Big Avatar Animator for remote player!");
+                return;
+            }
+
+            if (_spawnedBigAvatar != null)
+                Destroy(_spawnedBigAvatar);
+
+            var TargetTransform = BigAvatarAnimator.GetField<Transform, MultiplayerBigAvatarAnimator>("_avatarTransform");
+
+            var p = Utils.GetPath(TargetTransform);
+            _logger.Debug($"Attempting to spawn Big Avatar '{avatar.descriptor.name}' into '{p}'");
+
+            _spawnedBigAvatar = _avatarSpawner.SpawnAvatar(avatar, _bigAvatarInput, TargetTransform);
+            _bigAvatarInput.SetEnabled(true);
+            avatarIk = _spawnedBigAvatar.GetComponent<AvatarIK>();
+            if (avatarIk != null)
+                avatarIk.isLocomotionEnabled = true;
+            _spawnedBigAvatar.scale = _avatarPacket.Scale * 5.0f;
         }
     }
 }

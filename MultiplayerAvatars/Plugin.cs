@@ -12,7 +12,7 @@ namespace MultiplayerAvatars
     [Plugin(RuntimeOptions.DynamicInit)]
     class Plugin
     {
-        public const string ID = "com.goobwabber.MultiplayerAvatars";
+        public const string ID = "com.sctjkc01.StickEdit.MultiplayerAvatars";
 
         internal static IPALogger Logger = null!;
 
@@ -29,7 +29,7 @@ namespace MultiplayerAvatars
             zenjector.UseMetadataBinder<Plugin>();
             zenjector.UseLogger(logger);
             zenjector.UseHttpService();
-            zenjector.UseSiraSync(SiraUtil.Web.SiraSync.SiraSyncServiceType.GitHub, "Goobwabber", "MultiplayerAvatars");
+            // zenjector.UseSiraSync(SiraUtil.Web.SiraSync.SiraSyncServiceType.GitHub, "Goobwabber", "MultiplayerAvatars");
             zenjector.Install<MpavAppInstaller>(Location.App);
             zenjector.Install<MpavLobbyInstaller, MultiplayerLobbyInstaller>();
             zenjector.Install<MpavGameInstaller>(Location.MultiplayerCore);
